@@ -15,6 +15,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class StockActivity extends AppCompatActivity {
     private TextView textViewStock;
+    private WebappApi webappApi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,42 +27,44 @@ public class StockActivity extends AppCompatActivity {
 
         textViewStock = findViewById(R.id.tv_stock);
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://sndwebapi.spikotech.com/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+        webappApi = APIDistributor.getRetrofit().create(WebappApi.class);
+        StockRunnable stockRunnable = new StockRunnable();
+        new Thread(stockRunnable).start();
+    }
 
-        WebappApi webappApi = retrofit.create(WebappApi.class);
+    class StockRunnable implements Runnable {
 
-        Call<List<Stock>> call = webappApi.getStock();
+        @Override
+        public void run() {
+            Call<List<Stock>> call = webappApi.getStock();
 
-        call.enqueue(new Callback<List<Stock>>() {
-            @Override
-            public void onResponse(Call<List<Stock>> call, Response<List<Stock>> response) {
-                if (!response.isSuccessful()) {
-                    textViewStock.setText("Code: "+response.code());
-                    return;
+            call.enqueue(new Callback<List<Stock>>() {
+                @Override
+                public void onResponse(Call<List<Stock>> call, Response<List<Stock>> response) {
+                    if (!response.isSuccessful()) {
+                        textViewStock.setText("Code: "+response.code());
+                        return;
+                    }
+
+                    List<Stock> stocks = response.body();
+
+                    for (Stock stock: stocks) {
+                        String content = "";
+                       // content += "Stock Id: " + stock.getStockId() + "\n";
+                        content += "Product Name: " + stock.getName() + "\n";
+                        content += "Product Quantity: " + stock.getProductQuantity() + "\n";
+                        //content += "Price: " + stock.getStockPrice() + "\n";
+                        content += "Warehouse Name: " + stock.getWarehouseName() + "\n\n";
+
+                        textViewStock.append(content);
+                    }
                 }
 
-                List<Stock> stocks = response.body();
-
-                for (Stock stock: stocks) {
-                    String content = "";
-                    content += "Stock Id: " + stock.getStockId() + "\n";
-                    content += "Name: " + stock.getName() + "\n";
-                    content += "Product Quantity: " + stock.getProductQuantity() + "\n";
-                    content += "Price: " + stock.getStockPrice() + "\n";
-                    content += "Warehouse Name: " + stock.getWarehouseName() + "\n\n";
-
-                    textViewStock.append(content);
+                @Override
+                public void onFailure(Call<List<Stock>> call, Throwable t) {
+                    textViewStock.setText(t.getMessage());
                 }
-            }
-
-            @Override
-            public void onFailure(Call<List<Stock>> call, Throwable t) {
-                textViewStock.setText(t.getMessage());
-            }
-        });
-
+            });
+        }
     }
 }

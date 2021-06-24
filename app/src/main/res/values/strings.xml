@@ -2,4 +2,6 @@
     <string name="app_name">Distributor App</string>
     <string name="navigation_drawer_open">Open Navigation Drawer</string>
     <string name="navigation_drawer_close">Close Navigation Drawer</string>
+    <string name="facebook_app_id">215910443686698</string>
+    <string name="fb_login_protocol_scheme">fb215910443686698</string>
 </resources>

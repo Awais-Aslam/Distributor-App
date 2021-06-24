@@ -2,57 +2,70 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_margin="4dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:cardCornerRadius="4dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@drawable/bg1"
         android:layout_margin="4dp">
 
         <TextView
-            android:id="@+id/tv_shopname"
+            android:id="@+id/tv_shop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Shop Name"
             android:textSize="20sp"
-            android:textAllCaps="true"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            android:layout_margin="4dp"
+            android:layout_alignParentTop="true"
+            android:textColor="@android:color/white"/>
 
         <TextView
-            android:id="@+id/tv_agentname"
+            android:id="@+id/tv_agent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Agent Name"
             android:textSize="20sp"
-            android:layout_below="@+id/tv_shopname"/>
+            android:layout_margin="4dp"
+            android:textColor="@android:color/white"
+            android:layout_below="@+id/tv_shop"/>
 
         <TextView
-            android:id="@+id/tv_totalamount"
+            android:id="@+id/tv_total_amount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="34567"
-            android:textSize="18sp"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"/>
+            android:text="2345.0"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:layout_margin="4dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="5dp"/>
 
         <TextView
-            android:id="@+id/tv_profit"
+            android:id="@+id/tv_Profit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="345"
-            android:textSize="18sp"
-            android:layout_alignParentRight="true"
-            android:layout_below="@+id/tv_totalamount"/>
+            android:text=" "
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:layout_margin="4dp"
+            android:layout_below="@+id/tv_total_amount"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="5dp"/>
 
         <TextView
             android:id="@+id/tv_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="3/3/21"
-            android:textSize="16sp"
-            android:layout_below="@+id/tv_profit"
-            android:layout_alignParentRight="true"/>
+            android:text="5/5/2021"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:layout_margin="4dp"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@+id/tv_Profit"/>
 
     </RelativeLayout>
 

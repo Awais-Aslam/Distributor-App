@@ -6,11 +6,11 @@ public class Stock {
 
     private int stockId;
 
-    private String name;
+    private String productName;
 
     private int productQuantity;
 
-    @SerializedName("name1")
+    @SerializedName("warehouseName")
     private String warehouseName;
 
     private int stockPrice;
@@ -20,7 +20,7 @@ public class Stock {
     }
 
     public String getName() {
-        return name;
+        return productName;
     }
 
     public int getProductQuantity() {

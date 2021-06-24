@@ -8,12 +8,12 @@
     tools:context=".MyOrdersActivity">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/order_recyclerview"
+        android:id="@+id/order_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scrollbars="vertical"
-        android:background="@android:color/darker_gray"
-        android:padding="4dp"/>
+        android:padding="4dp"
+        android:layout_margin="2dp"
+        android:scrollbars="vertical"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_btn"
@@ -21,9 +21,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
+        android:elevation="6dp"
         android:src="@drawable/ic_add"
-        app:fabSize="normal"
-        app:backgroundTint="@color/design_default_color_primary"
-        android:elevation="6dp"/>
+        app:backgroundTint="#003d80"
+        app:fabSize="normal" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

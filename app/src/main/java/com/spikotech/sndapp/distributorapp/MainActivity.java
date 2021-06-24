@@ -16,93 +16,46 @@ import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private DrawerLayout drawer;
-    RecyclerView recyclecardview, list_recycler;
+    private WebappApi webappApi;
+    RecyclerView recyclerCardView;
+    int todayCount = 0;
+    int monthlyCount = 0;
+    int yearlyCount = 0;
 
     private ArrayList<String> mNames = new ArrayList<>();
     private ArrayList<String> mTitles = new ArrayList<>();
-
-    private ArrayList<String> mShopNames = new ArrayList<>();
-    private ArrayList<String> mBrands = new ArrayList<>();
-    private ArrayList<String> mPrices = new ArrayList<>();
-    private ArrayList<String> mTime = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        recyclerCardView = findViewById(R.id.recyclecardview);
+        webappApi = APIDistributor.getRetrofit().create(WebappApi.class);
 
-
-        recyclecardview = (RecyclerView) findViewById(R.id.recyclecardview);
-
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        recyclecardview.setLayoutManager(layoutManager);
-        RecyclerViewAdapter adapter = new RecyclerViewAdapter(this, mNames, mTitles);
-        recyclecardview.setAdapter(adapter);
-
-        mNames.add("$3450");
-        mNames.add("$8740");
-        mNames.add("$8930");
-
-
-        mTitles.add("Today's Sales");
-        mTitles.add("Monthly Sales");
-        mTitles.add("Yearly Sales");
-
-
-        list_recycler = (RecyclerView) findViewById(R.id.list_recycler);
-        LinearLayoutManager list = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        list_recycler.setLayoutManager(list);
-        ListAdapter adapter1 = new ListAdapter(this, mShopNames, mBrands, mPrices, mTime);
-        list_recycler.setAdapter(adapter1);
-
-        mShopNames.add("Ali store");
-        mShopNames.add("Raza store");
-        mShopNames.add("Lhe store");
-        mShopNames.add("Loqa store");
-        mShopNames.add("Ali store");
-        mShopNames.add("Raza store");
-        mShopNames.add("Lhe store");
-        mShopNames.add("Loqa store");
-
-        mBrands.add("Amazon");
-        mBrands.add("Apple");
-        mBrands.add("Samsung");
-        mBrands.add("Vivo");
-        mBrands.add("Amazon");
-        mBrands.add("Apple");
-        mBrands.add("Samsung");
-        mBrands.add("Vivo");
-
-        mPrices.add("$345");
-        mPrices.add("$3456");
-        mPrices.add("$3745");
-        mPrices.add("$3945");
-        mPrices.add("$345");
-        mPrices.add("$3456");
-        mPrices.add("$3745");
-        mPrices.add("$3945");
-
-        mTime.add("5m ago");
-        mTime.add("9m ago");
-        mTime.add("15m ago");
-        mTime.add("2m ago");
-        mTime.add("5m ago");
-        mTime.add("9m ago");
-        mTime.add("15m ago");
-        mTime.add("2m ago");
-
+        MainActivity.TodayRunnable runnableToday = new MainActivity.TodayRunnable();
+        new Thread(runnableToday).start();
+        MainActivity.MonthlyRunnable runnableMonth = new MainActivity.MonthlyRunnable();
+        new Thread(runnableMonth).start();
+        MainActivity.YearlyRunnable runnableYear = new MainActivity.YearlyRunnable();
+        new Thread(runnableYear).start();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("Home");
-
         drawer = findViewById(R.id.drawer_layout);
-
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
@@ -111,6 +64,162 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawer.addDrawerListener(toggle);
         toggle.syncState();
         navigationView.setCheckedItem(R.id.nav_home);
+    }
+
+    class YearlyRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            Call<List<Order>> call = webappApi.getOrder();
+
+            call.enqueue(new Callback<List<Order>>() {
+                @Override
+                public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
+                    if (!response.isSuccessful()) {
+                        Toast.makeText(MainActivity.this, "Code : " + response.code(), Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    List<Order> orders = response.body();
+
+                    for (Order order: orders) {
+                        String fullDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+                        String[] separated = fullDate.split("-");
+                        String currentYear = separated[0];
+                        String date = order.getOrderDate();
+                        String[] separate = date.split("-");
+                        String year = separate[0];
+
+                        int e = Integer.parseInt(year);
+                        int f = Integer.parseInt(currentYear);
+                        if (e == f) {
+                            yearlyCount = yearlyCount + 1;
+                        }
+                    }
+                    String countStr = String.valueOf(yearlyCount);
+                    mNames.add(countStr);
+                    mTitles.add("Yearly Orders");
+
+                    loadData();
+                }
+
+                @Override
+                public void onFailure(Call<List<Order>> call, Throwable t) {
+                    Toast.makeText(MainActivity.this, "Failure : " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    class MonthlyRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            Call<List<Order>> call = webappApi.getOrder();
+
+            call.enqueue(new Callback<List<Order>>() {
+                @Override
+                public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
+                    if (!response.isSuccessful()) {
+                        Toast.makeText(MainActivity.this, "Code : " + response.code(), Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    List<Order> orders = response.body();
+
+                    for (Order order: orders) {
+                        String fullDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+                        String[] separated = fullDate.split("-");
+                        String currentMonth = separated[1];
+                        String currentYear = separated[0];
+                        String date = order.getOrderDate();
+                        String[] separate = date.split("-");
+                        String month = separate[1];
+                        String year = separate[0];
+
+                        int c = Integer.parseInt(month);
+                        int d = Integer.parseInt(currentMonth);
+                        int e = Integer.parseInt(year);
+                        int f = Integer.parseInt(currentYear);
+                        if (c == d && e == f) {
+                            monthlyCount = monthlyCount + 1;
+                        }
+                    }
+                    String countStr = String.valueOf(monthlyCount);
+                    mNames.add(countStr);
+                    mTitles.add("Monthly Orders");
+                    loadData();
+                }
+
+                @Override
+                public void onFailure(Call<List<Order>> call, Throwable t) {
+                    Toast.makeText(MainActivity.this, "Failure : " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    class TodayRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            Call<List<Order>> call = webappApi.getOrder();
+
+            call.enqueue(new Callback<List<Order>>() {
+                @Override
+                public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
+                    if (!response.isSuccessful()) {
+                        Toast.makeText(MainActivity.this, "Code : " + response.code(), Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    List<Order> orders = response.body();
+
+                    for (Order order: orders) {
+                        String fullDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+                        String[] separated = fullDate.split("-");
+                        String currentDay = separated[2];
+                        String currentMonth = separated[1];
+                        String currentYear = separated[0];
+                        String date = order.getOrderDate();
+                        String[] separate = date.split("-");
+                        String dayTime = separate[2];
+                        String month = separate[1];
+                        String year = separate[0];
+                        String[] sep = dayTime.split("T");
+                        String day = sep[0];
+                        int a = Integer.parseInt(day);
+                        int b = Integer.parseInt(currentDay);
+                        int c = Integer.parseInt(month);
+                        int d = Integer.parseInt(currentMonth);
+                        int e = Integer.parseInt(year);
+                        int f = Integer.parseInt(currentYear);
+                        if (a == b && c == d && e == f) {
+                            todayCount = todayCount + 1;
+                        }
+                    }
+                    String countStr = String.valueOf(todayCount);
+                    mNames.add(countStr);
+                    //Toast.makeText(MainActivity.this, "Date: " + da, Toast.LENGTH_LONG).show();
+                    mTitles.add("Today's Orders");
+                    /*mTitles.add("Monthly Orders");
+                    mTitles.add("Yearly Orders");*/
+
+                    loadData();
+                }
+
+                @Override
+                public void onFailure(Call<List<Order>> call, Throwable t) {
+                    Toast.makeText(MainActivity.this, "Failure : " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private void loadData() {
+        recyclerCardView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        recyclerCardView.setHasFixedSize(true);
+        recyclerCardView.setAdapter(new RecyclerViewAdapter(this, mNames, mTitles));
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.spikotech.sndapp.distributorapp;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +27,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class MyOrdersActivity extends AppCompatActivity {
 
     private WebappApi webappApi;
-    private RecyclerView orderRecyclerView;
+    private RecyclerView orderListRecycler;
+    private List<Order> orderList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,33 +37,12 @@ public class MyOrdersActivity extends AppCompatActivity {
 
         getSupportActionBar().setTitle("My Orders");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        orderListRecycler = findViewById(R.id.order_list);
 
-        orderRecyclerView = findViewById(R.id.order_recyclerview);
-        orderRecyclerView.setHasFixedSize(true);
-        orderRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        webappApi = APIDistributor.getRetrofit().create(WebappApi.class);
 
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://sndwebapi.spikotech.com/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        webappApi = retrofit.create(WebappApi.class);
-
-        Call<List<OrderList>> call = webappApi.getOrder();
-
-        call.enqueue(new Callback<List<OrderList>>() {
-            @Override
-            public void onResponse(Call<List<OrderList>> call, Response<List<OrderList>> response) {
-                List<OrderList> list = response.body();
-                orderRecyclerView.setAdapter(new OrderAdapter(getApplicationContext(), list));
-            }
-
-            @Override
-            public void onFailure(Call<List<OrderList>> call, Throwable t) {
-                Toast.makeText(MyOrdersActivity.this, "Failed", Toast.LENGTH_SHORT).show();
-            }
-        });
+        OrdersRunnable runnable = new OrdersRunnable();
+        new Thread(runnable).start();
 
         FloatingActionButton fab = findViewById(R.id.fab_btn);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -70,5 +52,50 @@ public class MyOrdersActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    class OrdersRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            Call<List<Order>> call = webappApi.getOrder();
+
+            call.enqueue(new Callback<List<Order>>() {
+                @Override
+                public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
+                    if (!response.isSuccessful()) {
+                        Toast.makeText(MyOrdersActivity.this, "Code : " + response.code(), Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    List<Order> orders = response.body();
+
+                    for (Order order: orders) {
+                        String shopName = order.getShop();
+                        String agentName = order.getAgent();
+                        double totalAmount = order.getTotalAmount();
+                        int profit = order.getTotalProfit();
+                        String dateTime = order.getOrderDate();
+                        String[] separated = dateTime.split("T");
+                        String date = separated[0];
+                        Order order1 = new Order(shopName, agentName, totalAmount, profit, date);
+                        orderList.add(order1);
+                    }
+
+                    loadData();
+                }
+
+                @Override
+                public void onFailure(Call<List<Order>> call, Throwable t) {
+                    Toast.makeText(MyOrdersActivity.this, "Failure : " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private void loadData() {
+        orderListRecycler.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        orderListRecycler.setHasFixedSize(true);
+        orderListRecycler.setAdapter(new OrderAdapter(orderList));
     }
 }

@@ -3,7 +3,9 @@ package com.spikotech.sndapp.distributorapp;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class OrderList {
+import java.util.List;
+
+public class Order {
 
     @SerializedName("orderId")
     @Expose
@@ -16,13 +18,21 @@ public class OrderList {
     private String agent;
     @SerializedName("totalAmount")
     @Expose
-    private Integer totalAmount;
+    private Double totalAmount;
     @SerializedName("totalProfit")
     @Expose
     private Integer totalProfit;
     @SerializedName("orderDate")
     @Expose
     private String orderDate;
+
+    public Order(String shop, String agent, Double totalAmount, Integer totalProfit, String orderDate) {
+        this.shop = shop;
+        this.agent = agent;
+        this.totalAmount = totalAmount;
+        this.totalProfit = totalProfit;
+        this.orderDate = orderDate;
+    }
 
     public Integer getOrderId() {
         return orderId;
@@ -48,11 +58,11 @@ public class OrderList {
         this.agent = agent;
     }
 
-    public Integer getTotalAmount() {
+    public Double getTotalAmount() {
         return totalAmount;
     }
 
-    public void setTotalAmount(Integer totalAmount) {
+    public void setTotalAmount(Double totalAmount) {
         this.totalAmount = totalAmount;
     }
 
